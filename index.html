@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body {
+            height: calc(100vh - 40px);
+            font-family: Arial, sans-serif;
+            margin: 0px;
+            padding: 20px;
+            background-color: black;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .video-list {
+            flex: 1;
+            max-width: 300px;
+            background-color: silver;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #videoList {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 100%;
+            margin-top: 10px;
+        }
+
+        .video-player {
+            flex: 2;
+            background-color: silver;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        li:hover {
+            background-color: #e0e0e0;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .selected {
+            background-color: #d0e8ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="video-list">
+            <button onclick="selectDirectory()">Select Video Directory...</button>
+            <ul id="videoList"></ul>
+        </div>
+        <div class="video-player">
+            <video id="videoPlayer" controls>
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+    <script>
+        async function selectDirectory() {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                const videoList = document.getElementById('videoList');
+                videoList.innerHTML = '';
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.match(/\.(mp4|webm|ogg|vid)$/i)) {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = entry.name;
+                        listItem.onclick = async () => {
+                            const isSelected = listItem.classList.contains('selected');
+
+                            if (!isSelected) {
+                                const file = await entry.getFile();
+                                const url = URL.createObjectURL(file);
+                                playVideo(url, listItem);
+                            }
+                        };
+                        videoList.appendChild(listItem);
+                    }
+                }
+            } catch (error) {
+                console.error('Error selecting directory:', error);
+            }
+        }
+
+        function playVideo(videoUrl, listItem) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoListItems = document.querySelectorAll('#videoList li');
+            videoListItems.forEach(item => item.classList.remove('selected'));
+            listItem.classList.add('selected');
+            videoPlayer.src = videoUrl;
+            videoPlayer.load();
+            videoPlayer.play();
+        }
+    </script>
+</body>
+
+</html>
