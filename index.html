@@ -80,7 +80,6 @@
 
         .material-icons {
             font-size: 18px;
-            color: green;
         }
     </style>
 </head>
@@ -153,8 +152,10 @@
             videoListItems.forEach(item => item.classList.remove('selected'));
             listItem.classList.add('selected');
             videoPlayer.src = videoUrl;
-
+            subtitleTrack.src = '';
+            subtitleTrack.default = false;
             const subtitleFileName = videoFileName.replace(/\.[^/.]+$/, ".vtt");
+            
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'file' && entry.name === subtitleFileName) {
                     const subtitleFile = await entry.getFile();
@@ -167,6 +168,13 @@
 
             videoPlayer.load();
             videoPlayer.play();
+
+            const textTracks = videoPlayer.textTracks;
+            for (const element of textTracks) {
+                if (element.kind === 'subtitles') {
+                    element.mode = 'showing';
+                }
+            }
         }
     </script>
 </body>
